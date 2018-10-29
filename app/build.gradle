@@ -51,5 +51,6 @@ dependencies {
     //定位
     compile 'com.amap.api:location:3.3.0'
     //黄油刀
+    implementation 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 }

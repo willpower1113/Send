@@ -1,13 +1,21 @@
 package com.willpower.send.ui;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.willpower.send.R;
 import com.willpower.send.utils.LocationHelper;
@@ -15,12 +23,18 @@ import com.willpower.send.utils.LocationHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
-    private Button homeButton, mapButton;
+public class HomeActivity extends AppCompatActivity{
+    @BindView(R.id.mHomePager)
+    ViewPager mHomePager;
+    @BindView(R.id.mHomeTab)
+    TabLayout mHomeTab;
 
     private HomeFragment homeFragment;
     private MapFragment mapFragment;
+    private PersonalFragment personalFragment;
 
     List<Fragment> fragments;
 
@@ -28,14 +42,84 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        ButterKnife.bind(this);
         LocationHelper.getInstance().init(this);
         LocationHelper.getInstance().startLocation();//开启定位
-        homeButton = findViewById(R.id.homeButton);
-        mapButton = findViewById(R.id.mapButton);
-        initFragment();
-        homeButton.setOnClickListener(this);
-        mapButton.setOnClickListener(this);
+        initTabLayout();
     }
+
+    private void initTabLayout() {
+        initFragment();
+        TabViewPagerAdapter pagerAdapter =
+                new TabViewPagerAdapter(getSupportFragmentManager(), this, fragments);
+        mHomePager.setAdapter(pagerAdapter);
+
+        mHomeTab.setupWithViewPager(mHomePager);
+        for (int i = 0; i < mHomeTab.getTabCount(); i++) {
+            TabLayout.Tab tab = mHomeTab.getTabAt(i);
+            if (tab != null) {
+                tab.setCustomView(pagerAdapter.getTabView(i));
+            }
+        }
+        mHomeTab.addOnTabSelectedListener(tabSelectedListener);
+    }
+
+    TabLayout.OnTabSelectedListener tabSelectedListener = new TabLayout.OnTabSelectedListener() {
+        @Override
+        public void onTabSelected(TabLayout.Tab tab) {
+
+        }
+
+        @Override
+        public void onTabUnselected(TabLayout.Tab tab) {
+
+        }
+
+        @Override
+        public void onTabReselected(TabLayout.Tab tab) {
+
+        }
+    };
+
+    static final String[] tabs = {"首页", "地图", "我的"};
+
+    static class TabViewPagerAdapter extends FragmentPagerAdapter {
+
+        private Context context;
+
+        private List<Fragment> fragmentList;
+
+        public TabViewPagerAdapter(FragmentManager fm, Context context, List<Fragment> fragmentList) {
+            super(fm);
+            this.context = context;
+            this.fragmentList = fragmentList;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return fragmentList.get(position);
+        }
+
+        public View getTabView(int position) {
+            View v = LayoutInflater.from(context).inflate(R.layout.item_home_tab, null);
+            TextView tabContent = v.findViewById(R.id.tab_content);
+            tabContent.setText(tabs[position]);
+            ImageView tabIcon = v.findViewById(R.id.tab_icon);
+            LinearLayout tabLayout = v.findViewById(R.id.tab_layout);
+            return v;
+        }
+
+        @Override
+        public int getCount() {
+            return tabs.length;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return tabs[position];
+        }
+    }
+
 
     private void initFragment() {
         fragments = new ArrayList<>();
@@ -43,42 +127,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         fragments.add(homeFragment);
         mapFragment = new MapFragment();
         fragments.add(mapFragment);
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.contentPanel, homeFragment);
-        transaction.add(R.id.contentPanel, mapFragment);
-        transaction.commit();
-        showHideFragment(0);
-    }
-
-    private void showHideFragment(int position) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        if (position == 0) {
-            transaction.show(homeFragment);
-            transaction.hide(mapFragment);
-
-            homeButton.setTextColor(Color.BLUE);
-            mapButton.setTextColor(Color.BLACK);
-        } else {
-            transaction.show(mapFragment);
-            transaction.hide(homeFragment);
-
-            homeButton.setTextColor(Color.BLACK);
-            mapButton.setTextColor(Color.BLUE);
-        }
-        transaction.commit();
-    }
-
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.homeButton:
-                showHideFragment(0);
-                break;
-            case R.id.mapButton:
-                showHideFragment(1);
-                break;
-        }
+        personalFragment = new PersonalFragment();
+        fragments.add(personalFragment);
     }
 
     @Override
