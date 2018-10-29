@@ -1,0 +1,55 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    defaultConfig {
+        applicationId "com.willpower.send"
+        minSdkVersion 17
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+
+        ndk {
+            //设置支持的SO库架构（开发者可以根据需要，选择一个或多个平台的so）
+            abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86", "arm64-v8a", "x86_64"
+        }
+    }
+
+
+    signingConfigs {
+        release {
+            storeFile file("keystore/send.jks")
+            storePassword "123123"
+            keyAlias "peiwan"
+            keyPassword "123123"
+            v2SigningEnabled true
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    //    implementation 'me.jessyan:autosize:1.0.1'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support:design:26.1.0'
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.35'
+    //导航
+    compile 'com.amap.api:navi-3dmap:5.0.0'
+    //搜索
+    compile 'com.amap.api:search:5.0.0'
+    //定位
+    compile 'com.amap.api:location:3.3.0'
+    //黄油刀
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+}
